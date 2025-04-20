@@ -30,7 +30,7 @@ fig, ax = plt.subplots()
 scatter = ax.scatter(X[:, 0], X[:, 1], c=y_kmeans, cmap='viridis', label='Data Points')
 centroids = ax.scatter(loaded_model.cluster_centers_[:, 0],
                        loaded_model.cluster_centers_[:, 1],
-                       s=300, c='red', label='Cluster Centers', marker='X')
+                       s=300, c='red')
 ax.set_title('k-Means Clustering')
-ax.legend(loc='upper right')
+ax.legend()
 st.pyplot(fig)
