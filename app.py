@@ -1,36 +1,50 @@
-# app.py
 import streamlit as st
-import pickle
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-from sklearn.datasets import make_blobs
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
 
-# Set the page config BEFORE any other Streamlit command
-st.set_page_config(page_title="K-Means Clustering", layout="centered")
+# Page settings
+st.set_page_config(page_title="K-Means Clustering App with Iris", layout="wide")
 
-# Set title
-st.title("K-Means Clustering Visualizer by Kullaporn Promlachai")
+# App title
+st.markdown("<h1 style='text-align: center;'>🔍 K-Means Clustering App with Iris Dataset by Kullaporn Promlachai</h1>", unsafe_allow_html=True)
 
-# Load model
-with open('kmeans_model.pkl', 'rb') as f:
-    loaded_model = pickle.load(f)
+# Sidebar
+st.sidebar.header("⚙️ Configure Clustering")
+k = st.sidebar.slider("Select number of clusters (K)", min_value=2, max_value=10, value=3)
 
-# Load from a saved dataset or generate synthetic data
-X, _ = make_blobs(n_samples=300, centers=loaded_model.n_clusters, cluster_std=0.60, random_state=0)
+# Load Iris dataset
+iris = load_iris()
+X = iris.data
+feature_names = iris.feature_names
 
-# Predict using the loaded model
-y_kmeans = loaded_model.predict(X)
+# K-Means model
+model = KMeans(n_clusters=k, random_state=42)
+y_kmeans = model.fit_predict(X)
 
-# Display cluster centers
-st.subheader("Example Data for Visualization")
-st.markdown("This demo uses example data (2D) to illustrate clustering results.")
+# PCA for visualization
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+centers_pca = pca.transform(model.cluster_centers_)
 
 # Plotting
 fig, ax = plt.subplots()
-scatter = ax.scatter(X[:, 0], X[:, 1], c=y_kmeans, cmap='viridis', label='Data Points')
-centroids = ax.scatter(loaded_model.cluster_centers_[:, 0],
-                       loaded_model.cluster_centers_[:, 1],
-                       s=300, c='red')
-ax.set_title('k-Means Clustering')
-ax.legend()
+scatter = ax.scatter(X_pca[:, 0], X_pca[:, 1], c=y_kmeans, cmap='tab10', s=50)
+
+
+
+# Labels & title
+ax.set_title("Clusters (2D PCA Projection)")
+ax.set_xlabel("PCA1")
+ax.set_ylabel("PCA2")
+
+# Add legend with cluster labels
+handles, labels = scatter.legend_elements()
+labels = [f"Cluster {i}" for i in range(len(handles))]
+ax.legend(handles, labels, title="Clusters")
+
+# Show plot in Streamlit
 st.pyplot(fig)
